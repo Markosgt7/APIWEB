@@ -11,14 +11,15 @@ $id = ($path !== '/') ? end($buscarId) : null; //obtiene el ultimo valorde mi ur
 switch ($metodo) {
   case 'GET':
     //echo "Consulta de registro tipo GET";
-    consulta($conexiondb);
+    consulta($conexiondb, $id);
     break;
   case 'POST':
     //echo "Consulta de registro de tipo POST";
     insert($conexiondb);
     break;
   case 'PUT':
-    echo "Edición o actualizacion de registro de tipo PUT";
+    //echo "Edición o actualizacion de registro de tipo PUT";
+    actualizar($conexiondb, $id);
     break;
   case 'DELETE':
     //echo "Eliminacion de registro de tipo DELETE";
@@ -29,9 +30,9 @@ switch ($metodo) {
     break;
 }
 
-function consulta($conexiondb)
+function consulta($conexiondb, $id)
 {
-  $sql = "SELECT * FROM usuarios";
+  $sql = ($id === null) ? "SELECT * FROM usuarios" : "SELECT * FROM usuarios WHERE id=$id";
   $rspt = $conexiondb->query($sql);
   if ($rspt) {
     $datos = array();
@@ -42,7 +43,6 @@ function consulta($conexiondb)
     $conexiondb->close();
   }
 }
-
 function insert($conexiondb)
 {
   $dato = json_decode(file_get_contents('php://input'), true);
@@ -69,4 +69,19 @@ function eliminar($conexiondb, $id)
   } else {
     echo json_encode(array('mensaje' => 'Usuario Eliminado Correctamente'));
   }
+  $conexiondb->close();
+}
+function actualizar($conexiondb, $id)
+{
+  $dato = json_decode(file_get_contents('php://input'), true);
+  $nombre = $dato['nombre'];
+  //echo "El id a actualizar  es->" . $id . " con nombre->" . $nombre;
+  $sql = "UPDATE usuarios SET nombre='$nombre' WHERE id='$id'";
+  $rspt = $conexiondb->query($sql);
+  if (!$rspt) {
+    echo json_encode(array('mensaje' => 'Error al Actualizar'));
+  } else {
+    echo json_encode(array('mensaje' => 'Usuario Actualizado'));
+  }
+  $conexiondb->close();
 }
